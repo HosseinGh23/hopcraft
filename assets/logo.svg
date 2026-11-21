@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#18263E"/>
+      <stop offset="100%" stop-color="#0B1221"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0078D4"/>
+      <stop offset="100%" stop-color="#38D2FF"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect x="22" y="22" width="468" height="468" rx="105" fill="url(#bgGrad)" stroke="#56B2FF" stroke-opacity="0.28" stroke-width="4"/>
+  <g fill="url(#accentGrad)" filter="url(#glow)">
+    <path fill-rule="evenodd" d="M143 184a72 72 0 1 0 0 144 72 72 0 0 0 0-144Zm0 31a41 41 0 1 1 0 82 41 41 0 0 1 0-82Z"/>
+    <path fill-rule="evenodd" d="M369 184a72 72 0 1 0 0 144 72 72 0 0 0 0-144Zm0 31a41 41 0 1 1 0 82 41 41 0 0 1 0-82Z"/>
+    <circle cx="369" cy="256" r="19"/>
+    <rect x="204" y="243" width="104" height="26" rx="13"/>
+    <polygon points="245,213 287,256 245,299 227,283 254,256 227,229"/>
+  </g>
+</svg>

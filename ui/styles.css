@@ -1,0 +1,756 @@
+/* HopCraft — Authentic Windows 11 WinUI 3 / Fluent 2 Native Desktop Styles */
+
+:root[data-theme="dark"] {
+  --bg: #202020;
+  --surface: rgba(255, 255, 255, 0.0512);
+  --surface-solid: #2c2c2c;
+  --control-bg: rgba(255, 255, 255, 0.0605);
+  --control-hover: rgba(255, 255, 255, 0.0837);
+  --control-pressed: rgba(255, 255, 255, 0.0326);
+  --control-border: rgba(255, 255, 255, 0.08);
+  --control-top-highlight: rgba(255, 255, 255, 0.11);
+  --card-border: rgba(0, 0, 0, 0.28);
+  --card-top-stroke: rgba(255, 255, 255, 0.07);
+  --input-bg: rgba(255, 255, 255, 0.055);
+  --input-focus-bg: rgba(30, 30, 30, 0.85);
+  --input-disabled: rgba(255, 255, 255, 0.03);
+  --code-bg: #191919;
+  --divider: rgba(255, 255, 255, 0.08);
+  --text: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.78);
+  --text-muted: rgba(255, 255, 255, 0.56);
+  --accent: #4cc2ff;
+  --accent-btn: #0078d4;
+  --accent-btn-hover: #1484db;
+  --accent-btn-pressed: #006bc0;
+  --accent-fg: #ffffff;
+  --pill-muted-bg: rgba(255, 255, 255, 0.08);
+  --pill-muted-fg: rgba(255, 255, 255, 0.72);
+  --pill-ok-bg: rgba(56, 211, 100, 0.15);
+  --pill-ok-fg: #6ccb5f;
+  --pill-err-bg: rgba(255, 123, 114, 0.16);
+  --pill-err-fg: #ff99a4;
+  --pill-accent-bg: rgba(76, 194, 255, 0.16);
+  --pill-accent-fg: #60cdff;
+  --syn-key: #79c0ff;
+  --syn-str: #a5d6ff;
+  --syn-num: #7ee787;
+  --syn-bool: #d2a8ff;
+  --syn-punct: #8b949e;
+  --flyout-bg: #2c2c2c;
+  --flyout-shadow: 0 8px 24px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="light"] {
+  --bg: #f3f3f3;
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-solid: #ffffff;
+  --control-bg: rgba(255, 255, 255, 0.85);
+  --control-hover: rgba(249, 249, 249, 0.9);
+  --control-pressed: rgba(243, 243, 243, 0.7);
+  --control-border: rgba(0, 0, 0, 0.09);
+  --control-top-highlight: rgba(0, 0, 0, 0.06);
+  --card-border: rgba(0, 0, 0, 0.075);
+  --card-top-stroke: rgba(255, 255, 255, 0.9);
+  --input-bg: rgba(255, 255, 255, 0.88);
+  --input-focus-bg: #ffffff;
+  --input-disabled: rgba(0, 0, 0, 0.035);
+  --code-bg: #fbfbfb;
+  --divider: rgba(0, 0, 0, 0.075);
+  --text: #1b1b1b;
+  --text-secondary: rgba(0, 0, 0, 0.76);
+  --text-muted: rgba(0, 0, 0, 0.54);
+  --accent: #005fb8;
+  --accent-btn: #005fb8;
+  --accent-btn-hover: #0069cc;
+  --accent-btn-pressed: #0052a3;
+  --accent-fg: #ffffff;
+  --pill-muted-bg: rgba(0, 0, 0, 0.06);
+  --pill-muted-fg: rgba(0, 0, 0, 0.65);
+  --pill-ok-bg: #dff6dd;
+  --pill-ok-fg: #0f7b0f;
+  --pill-err-bg: #fde7e9;
+  --pill-err-fg: #c42b1c;
+  --pill-accent-bg: #e1f0ff;
+  --pill-accent-fg: #005fb8;
+  --syn-key: #0550ae;
+  --syn-str: #0a3069;
+  --syn-num: #116329;
+  --syn-bool: #8250df;
+  --syn-punct: #6e7781;
+  --flyout-bg: #f9f9f9;
+  --flyout-shadow: 0 8px 24px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", "Vazirmatn", "Microsoft YaHei UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.app-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 15px 18px 16px;
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  object-fit: contain;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.brand-text {
+  min-width: 0;
+}
+
+.brand-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-name {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.25px;
+  line-height: 1.18;
+}
+
+.brand-subtitle {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.route-pills {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: "Segoe UI Variable Text", "Segoe UI", "Cascadia Code", sans-serif;
+  white-space: nowrap;
+}
+
+.pill-muted { background: var(--pill-muted-bg); color: var(--pill-muted-fg); }
+.pill-ok { background: var(--pill-ok-bg); color: var(--pill-ok-fg); }
+.pill-err { background: var(--pill-err-bg); color: var(--pill-err-fg); }
+.pill-accent { background: var(--pill-accent-bg); color: var(--pill-accent-fg); }
+
+.pill-arrow {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+/* Native WinUI 3 Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  box-shadow: inset 0 1px 0 var(--card-top-stroke);
+  border-radius: 8px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.card-grow {
+  flex: 1 1 auto;
+  min-height: 160px;
+  overflow: hidden;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Fields */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label-with-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.field-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.field-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.text-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 28px 0 10px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-bottom: 1.5px solid var(--text-muted);
+  border-radius: 4px;
+  font-size: 12.5px;
+  outline: none;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+  user-select: text;
+  cursor: text;
+}
+
+.text-input:hover:not(:disabled):not(:focus) {
+  background: var(--control-hover);
+}
+
+.text-input:focus {
+  background: var(--input-focus-bg);
+  border-color: var(--control-border);
+  border-bottom: 2px solid var(--accent);
+}
+
+.text-input:disabled {
+  background: var(--input-disabled);
+  color: var(--text-muted);
+  border-bottom-color: var(--control-border);
+  cursor: default;
+}
+
+.text-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.72;
+}
+
+.clear-inline {
+  position: absolute;
+  right: 5px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: default;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-inline:hover {
+  background: var(--control-hover);
+  color: var(--text);
+}
+
+/* Ports Row */
+.ports-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.inline-port-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-label {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.port-input {
+  width: 76px;
+  padding: 0 8px;
+  text-align: center;
+}
+
+.listen-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+}
+
+.listen-input {
+  width: 112px;
+  padding: 0 8px;
+  text-align: center;
+}
+
+/* Native WinUI 3 ToggleSwitch */
+.switch-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  cursor: default;
+}
+
+.switch-control input {
+  display: none;
+}
+
+.switch-track {
+  width: 40px;
+  height: 20px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1.5px solid var(--text-muted);
+  position: relative;
+  transition: background-color 0.14s ease, border-color 0.14s ease;
+  flex-shrink: 0;
+}
+
+.switch-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  position: absolute;
+  top: 2.5px;
+  left: 3px;
+  transition: transform 0.14s ease, background-color 0.14s ease;
+}
+
+.switch-control:hover .switch-track {
+  background: var(--control-hover);
+}
+
+.switch-control input:checked + .switch-track {
+  background: var(--accent-btn);
+  border-color: var(--accent-btn);
+}
+
+.switch-control input:checked + .switch-track .switch-thumb {
+  background: #ffffff;
+  transform: translateX(19px);
+}
+
+.switch-text {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Native WinUI 3 CheckBox (replaces browser default checkbox) */
+.fluent-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: default;
+}
+
+.fluent-check input {
+  display: none;
+}
+
+.fluent-check-box {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  border: 1.5px solid var(--text-muted);
+  background: transparent;
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.fluent-check:hover .fluent-check-box {
+  background: var(--control-hover);
+}
+
+.fluent-check input:checked + .fluent-check-box {
+  background: var(--accent-btn);
+  border-color: var(--accent-btn);
+  color: #ffffff;
+}
+
+.divider {
+  height: 1px;
+  background: var(--divider);
+}
+
+/* Native WinUI 3 Buttons (Windows desktop cursor: default, subtle bevel) */
+.actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.actions-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn, .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: default;
+  outline: none;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.btn:focus-visible, .icon-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.btn-primary {
+  padding: 0 14px;
+  background: var(--accent-btn);
+  color: var(--accent-fg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom-color: rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary:hover {
+  background: var(--accent-btn-hover);
+}
+
+.btn-primary:active {
+  background: var(--accent-btn-pressed);
+}
+
+.btn-default {
+  padding: 0 13px;
+  background: var(--control-bg);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-top-color: var(--control-top-highlight);
+}
+
+.btn-default:hover {
+  background: var(--control-hover);
+}
+
+.btn-default:active {
+  background: var(--control-pressed);
+}
+
+.btn-subtle {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+
+.btn-subtle:hover {
+  background: var(--control-hover);
+  color: var(--text);
+}
+
+.btn-subtle:active {
+  background: var(--control-pressed);
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--control-bg);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-top-color: var(--control-top-highlight);
+  flex-shrink: 0;
+}
+
+.icon-btn:hover {
+  background: var(--control-hover);
+}
+
+.icon-btn:active {
+  background: var(--control-pressed);
+}
+
+/* Native MenuFlyout */
+.dropdown-wrap {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  min-width: 156px;
+  background: var(--flyout-bg);
+  border-radius: 7px;
+  padding: 4px;
+  box-shadow: var(--flyout-shadow);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+html[dir="rtl"] .dropdown-menu {
+  right: auto;
+  left: 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: default;
+  text-align: start;
+}
+
+.dropdown-item:hover {
+  background: var(--control-hover);
+}
+
+.dropdown-item.active {
+  background: var(--pill-accent-bg);
+  color: var(--pill-accent-fg);
+  font-weight: 600;
+}
+
+/* Output Code Viewer */
+.code-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--code-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  overflow: auto;
+}
+
+.code-view {
+  margin: 0;
+  padding: 12px 14px;
+  font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: pre;
+  user-select: text;
+  cursor: text;
+  color: var(--text);
+}
+
+.code-placeholder {
+  color: var(--text-muted);
+  font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  font-size: 12.5px;
+  user-select: none;
+  cursor: default;
+}
+
+.tok-key { color: var(--syn-key); }
+.tok-str { color: var(--syn-str); }
+.tok-num { color: var(--syn-num); }
+.tok-bool { color: var(--syn-bool); }
+.tok-punct { color: var(--syn-punct); }
+
+/* Subtle Windows 11 Overlay Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.35);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.6);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Fluent InfoBar Notification */
+.toast-container {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+html[dir="rtl"] .toast-container {
+  right: auto;
+  left: 16px;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 240px;
+  max-width: 380px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  box-shadow: var(--flyout-shadow);
+  background: var(--flyout-bg);
+  color: var(--text);
+  animation: toastIn 0.16s ease-out;
+}
+
+.toast-ok {
+  border-inline-start: 3px solid var(--pill-ok-fg);
+}
+
+.toast-err {
+  border-inline-start: 3px solid var(--pill-err-fg);
+}
+
+.toast-title {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.toast-body {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+  word-break: break-word;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

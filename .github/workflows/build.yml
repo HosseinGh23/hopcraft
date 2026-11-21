@@ -1,0 +1,89 @@
+name: Build HopCraft (Windows x64 / x86 / ARM64)
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+          - arch: x86
+            runner: windows-latest
+            target: i686-pc-windows-msvc
+          - arch: arm64
+            runner: windows-11-arm
+            target: aarch64-pc-windows-msvc
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust stable (${{ matrix.target }})
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
+          key: ${{ matrix.target }}
+
+      - name: Run Rust unit tests (x64)
+        if: matrix.arch == 'x64'
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: Build HopCraft.exe (${{ matrix.arch }})
+        run: cargo build --release --target ${{ matrix.target }} --manifest-path src-tauri/Cargo.toml
+
+      - name: Prepare architecture-labeled binary
+        shell: pwsh
+        run: |
+          $src = "src-tauri/target/${{ matrix.target }}/release/HopCraft.exe"
+          if (-not (Test-Path $src)) { throw "Binary not found: $src" }
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $dst = "dist/HopCraft-windows-${{ matrix.arch }}.exe"
+          Copy-Item $src $dst
+          $sizeMB = [math]::Round((Get-Item $dst).Length / 1MB, 2)
+          Write-Host "Built $dst ($sizeMB MB)"
+
+      - name: Upload ${{ matrix.arch }} artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HopCraft-windows-${{ matrix.arch }}
+          path: dist/HopCraft-windows-${{ matrix.arch }}.exe
+          retention-days: 30
+
+  release:
+    name: Publish GitHub Release
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create GitHub Release with x64, x86 & ARM64 binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*.exe
+          generate_release_notes: true

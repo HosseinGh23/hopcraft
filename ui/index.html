@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HopCraft — Xray Proxy Chain JSON Generator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <div class="app-shell">
+    <!-- Top Native App Bar -->
+    <header class="app-header">
+      <div class="brand">
+        <img src="logo.png" alt="HopCraft" class="brand-logo" draggable="false" />
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <h1 class="brand-name">HopCraft</h1>
+            <span class="pill pill-muted">v1.0.0</span>
+          </div>
+          <p id="subtitle" class="brand-subtitle">VLESS • VMess • Trojan • Shadowsocks | Xray Chain JSON</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="route-pills" dir="ltr">
+          <span id="pill-hop1" class="pill pill-muted">● Hop 1</span>
+          <span class="pill-arrow">→</span>
+          <span id="pill-hop2" class="pill pill-muted">● Hop 2 (Exit)</span>
+        </div>
+
+        <!-- Globe Language Menu -->
+        <div class="dropdown-wrap">
+          <button id="btn-lang" class="icon-btn" type="button" title="Language" aria-label="Language">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </button>
+          <div id="lang-menu" class="dropdown-menu hidden" role="menu"></div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="btn-theme" class="icon-btn" type="button" title="Toggle Light / Dark Theme" aria-label="Toggle Theme">
+          <svg id="icon-sun" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Chain Configuration Card -->
+    <section class="card">
+      <div class="card-head">
+        <span id="chain-section-title" class="section-title">Chain Configuration</span>
+        <div class="card-head-actions">
+          <button id="btn-swap" class="btn btn-subtle" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="17 1 21 5 17 9"></polyline>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+              <polyline points="7 23 3 19 7 15"></polyline>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+            </svg>
+            <span id="lbl-swap">Swap Hops</span>
+          </button>
+          <button id="btn-clear" class="btn btn-subtle" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+              <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+            </svg>
+            <span id="lbl-clear">Clear</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Hop 1 -->
+      <div class="field-group">
+        <div class="field-label-row">
+          <label for="hop1-input" id="lbl-hop1" class="field-label">Hop 1 — Entry / Bridge</label>
+          <span id="hint-hop1" class="field-hint">First proxy (relay bridge)</span>
+        </div>
+        <div class="input-row">
+          <div class="input-wrap" dir="ltr">
+            <input id="hop1-input" class="text-input mono" type="text" dir="ltr" autocomplete="off" spellcheck="false" placeholder="vless://  vmess://  trojan://  ss://" />
+            <button id="btn-clear-hop1" class="clear-inline hidden" type="button" aria-label="Clear" tabindex="-1">×</button>
+          </div>
+          <button id="btn-paste-hop1" class="icon-btn" type="button" title="Paste Hop 1">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Hop 2 -->
+      <div class="field-group">
+        <div class="field-label-row">
+          <div class="label-with-badge">
+            <label for="hop2-input" id="lbl-hop2" class="field-label">Hop 2 — Exit Server</label>
+            <span id="badge-exit" class="pill pill-ok">EXIT IP</span>
+          </div>
+          <span id="hint-hop2" class="field-hint">Second proxy (final outgoing IP)</span>
+        </div>
+        <div class="input-row">
+          <div class="input-wrap" dir="ltr">
+            <input id="hop2-input" class="text-input mono" type="text" dir="ltr" autocomplete="off" spellcheck="false" placeholder="vless://  vmess://  trojan://  ss://" />
+            <button id="btn-clear-hop2" class="clear-inline hidden" type="button" aria-label="Clear" tabindex="-1">×</button>
+          </div>
+          <button id="btn-paste-hop2" class="icon-btn" type="button" title="Paste Hop 2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inbound Ports & Actions Card -->
+    <section class="card">
+      <div class="ports-row">
+        <label class="switch-control">
+          <input id="chk-mixed" type="checkbox" checked />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span id="lbl-switch-mode" class="switch-text">Mixed (SOCKS5 + HTTP)</span>
+        </label>
+
+        <!-- Mixed Port -->
+        <div id="mixed-group" class="inline-port-group">
+          <span id="lbl-port" class="inline-label">Port:</span>
+          <input id="mixed-port" class="text-input mono port-input" type="text" dir="ltr" inputmode="numeric" maxlength="5" value="10808" />
+        </div>
+
+        <!-- Separate Ports -->
+        <div id="split-group" class="inline-port-group hidden">
+          <label class="fluent-check">
+            <input id="chk-socks" type="checkbox" checked />
+            <span class="fluent-check-box">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2 6.5 4.8 9.2 10 3"></polyline>
+              </svg>
+            </span>
+            <span>SOCKS5</span>
+          </label>
+          <input id="socks-port" class="text-input mono port-input" type="text" dir="ltr" inputmode="numeric" maxlength="5" value="10808" />
+
+          <label class="fluent-check">
+            <input id="chk-http" type="checkbox" checked />
+            <span class="fluent-check-box">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2 6.5 4.8 9.2 10 3"></polyline>
+              </svg>
+            </span>
+            <span>HTTP</span>
+          </label>
+          <input id="http-port" class="text-input mono port-input" type="text" dir="ltr" inputmode="numeric" maxlength="5" value="10810" />
+        </div>
+
+        <div class="listen-group">
+          <span id="lbl-listen" class="inline-label">Listen:</span>
+          <input id="listen-input" class="text-input mono listen-input" type="text" dir="ltr" value="127.0.0.1" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="actions-row">
+        <div class="actions-left">
+          <button id="btn-generate" class="btn btn-primary" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span id="lbl-generate">Generate JSON</span>
+          </button>
+          <button id="btn-copy" class="btn btn-default" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span id="lbl-copy">Copy JSON</span>
+          </button>
+          <button id="btn-save" class="btn btn-default" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span id="lbl-save">Save as .json</span>
+          </button>
+        </div>
+        <span id="mode-badge" class="pill pill-accent" dir="ltr">inbound: mixed :10808</span>
+      </div>
+    </section>
+
+    <!-- Output JSON Card -->
+    <section class="card card-grow">
+      <div class="card-head">
+        <span id="output-section-title" class="section-title">Output Config (Xray JSON)</span>
+        <span id="meta-label" class="field-hint mono">Empty</span>
+      </div>
+      <div class="code-container" dir="ltr">
+        <pre id="json-output" class="code-view"><span id="json-placeholder" class="code-placeholder">Generated Xray JSON will appear here...</span></pre>
+      </div>
+    </section>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
