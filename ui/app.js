@@ -1,12 +1,23 @@
-/* HopCraft Frontend Controller (Tauri v2 + Native Desktop Polish) */
+/* HopCraft Frontend Controller (Tauri v2 + Native Desktop + Internal Updater) */
 
 (() => {
   const invoke = window.__TAURI__?.core?.invoke;
+  const listenEvent = window.__TAURI__?.event?.listen;
   const STORAGE_KEY = "hopcraft_settings_v1";
 
   const state = {
     lang: "en",
     theme: "dark",
+    includePrerelease: false,
+    appInfo: {
+      version: "1.0.0",
+      arch: "x64",
+      is_installed: false,
+      repo_url: "https://github.com/HosseinGh23/hopcraft"
+    },
+    updateData: null,
+    isCheckingUpdate: false,
+    isDownloadingUpdate: false,
     lastJson: "",
     lastLines: 0,
     lastBytes: 0,
@@ -16,9 +27,29 @@
   const $ = (id) => document.getElementById(id);
 
   const el = {
+    appVersionPill: $("app-version-pill"),
     subtitle: $("subtitle"),
     pillHop1: $("pill-hop1"),
     pillHop2: $("pill-hop2"),
+    btnGithub: $("btn-github"),
+    btnUpdate: $("btn-update"),
+    updateDot: $("update-dot"),
+    updatePanel: $("update-panel"),
+    lblUpdateTitle: $("lbl-update-title"),
+    updateModePill: $("update-mode-pill"),
+    chkPrerelease: $("chk-prerelease"),
+    lblPrerelease: $("lbl-prerelease"),
+    updateStatusText: $("update-status-text"),
+    updateVersionRow: $("update-version-row"),
+    updateNewVer: $("update-new-ver"),
+    updatePreBadge: $("update-pre-badge"),
+    updateProgressWrap: $("update-progress-wrap"),
+    updateProgressBar: $("update-progress-bar"),
+    updateProgressText: $("update-progress-text"),
+    btnCheckNow: $("btn-check-now"),
+    lblCheckNow: $("lbl-check-now"),
+    btnInstallNow: $("btn-install-now"),
+    lblInstallNow: $("lbl-install-now"),
     btnLang: $("btn-lang"),
     langMenu: $("lang-menu"),
     btnTheme: $("btn-theme"),
@@ -65,21 +96,18 @@
     toastContainer: $("toast-container")
   };
 
-  // --- Native Desktop Behavior Guards (remove web/browser feel) ---
+  // --- Native Desktop Behavior Guards ---
   document.addEventListener("contextmenu", (e) => {
     const target = e.target;
     const isInput = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA");
     const isCode = target && target.closest && target.closest(".code-view");
-    if (!isInput && !isCode) {
-      e.preventDefault();
-    }
+    if (!isInput && !isCode) e.preventDefault();
   });
 
   document.addEventListener("keydown", (e) => {
     const ctrl = e.ctrlKey || e.metaKey;
     const key = e.key.toLowerCase();
 
-    // Block browser-only shortcuts (Reload, Print, Find, DevTools, Zoom, History)
     if (
       e.key === "F5" ||
       e.key === "F12" ||
@@ -87,9 +115,7 @@
       (e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight"))
     ) {
       e.preventDefault();
-      if (ctrl && key === "s") {
-        saveJson();
-      }
+      if (ctrl && key === "s") saveJson();
       return;
     }
 
@@ -137,6 +163,10 @@
     });
   }
 
+  function formatMB(bytes) {
+    return (bytes / (1024 * 1024)).toFixed(2);
+  }
+
   function showToast(title, body, isError = false) {
     const node = document.createElement("div");
     node.className = `toast ${isError ? "toast-err" : "toast-ok"}`;
@@ -161,6 +191,9 @@
       const data = JSON.parse(raw);
       if (data.lang && window.HOPCRAFT_I18N[data.lang]) state.lang = data.lang;
       if (data.theme === "light" || data.theme === "dark") state.theme = data.theme;
+      if (typeof data.includePrerelease === "boolean") {
+        state.includePrerelease = data.includePrerelease;
+      }
       if (typeof data.mixedMode === "boolean") el.chkMixed.checked = data.mixedMode;
       if (data.mixedPort) el.mixedPort.value = String(data.mixedPort);
       if (typeof data.useSocks === "boolean") el.chkSocks.checked = data.useSocks;
@@ -169,6 +202,7 @@
       if (data.httpPort) el.httpPort.value = String(data.httpPort);
       if (data.listen) el.listenInput.value = String(data.listen);
     } catch (_) {}
+    el.chkPrerelease.checked = state.includePrerelease;
   }
 
   function saveSettings() {
@@ -178,6 +212,7 @@
         JSON.stringify({
           lang: state.lang,
           theme: state.theme,
+          includePrerelease: state.includePrerelease,
           mixedMode: el.chkMixed.checked,
           mixedPort: el.mixedPort.value.trim(),
           useSocks: el.chkSocks.checked,
@@ -216,6 +251,14 @@
     }
   }
 
+  function updateModePillText() {
+    const modeLabel = state.appInfo.is_installed
+      ? tr("update_mode_installed")
+      : tr("update_mode_portable");
+    el.updateModePill.textContent = `${state.appInfo.arch} • ${modeLabel}`;
+    el.appVersionPill.textContent = `v${state.appInfo.version}`;
+  }
+
   function applyLanguage() {
     const langMeta =
       window.HOPCRAFT_LANGUAGES.find((l) => l.code === state.lang) ||
@@ -230,8 +273,16 @@
     }
 
     el.subtitle.textContent = tr("subtitle");
+    el.btnGithub.title = tr("github_tooltip");
+    el.btnUpdate.title = tr("update_tooltip");
+    el.lblUpdateTitle.textContent = tr("update_title");
+    el.lblPrerelease.textContent = tr("update_include_pre");
+    el.updatePreBadge.textContent = tr("update_prerelease_badge");
+    el.lblCheckNow.textContent = tr("update_btn_check");
+    el.lblInstallNow.textContent = tr("update_btn_install");
     el.btnLang.title = tr("lang_tooltip");
     el.btnTheme.title = tr("theme_tooltip");
+
     el.chainSectionTitle.textContent = tr("chain_section");
     el.lblSwap.textContent = tr("btn_swap");
     el.lblClear.textContent = tr("btn_clear");
@@ -257,12 +308,131 @@
     el.lblSave.textContent = tr("btn_save");
     el.outputSectionTitle.textContent = tr("output_section");
 
+    updateModePillText();
+    renderUpdateState();
     renderLanguageMenu();
     updateMetaLabel();
     updateModeBadge();
     updateRoutePills();
   }
 
+  // --- Updater Logic ---
+  function renderUpdateState() {
+    if (state.isDownloadingUpdate) return;
+
+    if (state.isCheckingUpdate) {
+      el.updateStatusText.textContent = tr("update_checking");
+      el.updateVersionRow.classList.add("hidden");
+      el.btnInstallNow.classList.add("hidden");
+      el.btnCheckNow.disabled = true;
+      return;
+    }
+
+    el.btnCheckNow.disabled = false;
+
+    if (!state.updateData) {
+      el.updateStatusText.textContent = tr("update_ready");
+      el.updateVersionRow.classList.add("hidden");
+      el.btnInstallNow.classList.add("hidden");
+      return;
+    }
+
+    const u = state.updateData;
+    if (u.has_update) {
+      el.updateDot.classList.remove("hidden");
+      el.updateStatusText.textContent = tr("update_available", { tag: u.tag_name });
+      el.updateNewVer.textContent = u.tag_name;
+      el.updatePreBadge.classList.toggle("hidden", !u.is_prerelease);
+      el.updateVersionRow.classList.remove("hidden");
+      el.btnInstallNow.classList.remove("hidden");
+      el.btnInstallNow.disabled = false;
+    } else {
+      el.updateDot.classList.add("hidden");
+      el.updateStatusText.textContent = tr("update_up_to_date", { ver: u.current_version });
+      el.updateVersionRow.classList.add("hidden");
+      el.btnInstallNow.classList.add("hidden");
+    }
+  }
+
+  async function runUpdateCheck(silent = false) {
+    if (!invoke || state.isCheckingUpdate || state.isDownloadingUpdate) return;
+    state.isCheckingUpdate = true;
+    renderUpdateState();
+
+    try {
+      const res = await invoke("check_for_updates", {
+        includePrerelease: state.includePrerelease
+      });
+      state.updateData = res;
+      state.isCheckingUpdate = false;
+      renderUpdateState();
+
+      if (!silent && res.has_update) {
+        showToast(tr("update_title"), tr("update_available", { tag: res.tag_name }), false);
+      }
+    } catch (err) {
+      state.isCheckingUpdate = false;
+      el.btnCheckNow.disabled = false;
+      if (!silent) {
+        el.updateStatusText.textContent = tr("update_failed", { err: String(err) });
+      }
+    }
+  }
+
+  async function installAvailableUpdate() {
+    if (!invoke || !state.updateData || state.isDownloadingUpdate) return;
+    const u = state.updateData;
+
+    if (!u.download_url || !u.asset_name) {
+      el.updateStatusText.textContent = tr("update_no_asset", { tag: u.tag_name });
+      invoke("open_external_url", { url: u.release_url }).catch(() => {});
+      return;
+    }
+
+    state.isDownloadingUpdate = true;
+    el.btnCheckNow.disabled = true;
+    el.btnInstallNow.disabled = true;
+    el.chkPrerelease.disabled = true;
+    el.updateStatusText.textContent = tr("update_downloading");
+    el.updateProgressWrap.classList.remove("hidden");
+    el.updateProgressBar.style.width = "0%";
+    el.updateProgressText.textContent = "0%";
+
+    try {
+      await invoke("download_and_install_update", {
+        downloadUrl: u.download_url,
+        assetName: u.asset_name,
+        isInstaller: u.is_installer
+      });
+      el.updateStatusText.textContent = tr("update_applying");
+    } catch (err) {
+      state.isDownloadingUpdate = false;
+      el.btnCheckNow.disabled = false;
+      el.btnInstallNow.disabled = false;
+      el.chkPrerelease.disabled = false;
+      el.updateProgressWrap.classList.add("hidden");
+      el.updateStatusText.textContent = tr("update_failed", { err: String(err) });
+      showToast(tr("update_title"), String(err), true);
+    }
+  }
+
+  if (listenEvent) {
+    listenEvent("update-progress", (event) => {
+      const p = event.payload || {};
+      const pct = Math.min(100, Math.max(0, Number(p.percent || 0)));
+      el.updateProgressBar.style.width = `${pct}%`;
+      if (p.total > 0) {
+        el.updateProgressText.textContent = `${pct}% (${formatMB(p.downloaded)} / ${formatMB(p.total)} MB)`;
+      } else {
+        el.updateProgressText.textContent = `${formatMB(p.downloaded || 0)} MB`;
+      }
+      if (pct >= 100) {
+        el.updateStatusText.textContent = tr("update_applying");
+      }
+    });
+  }
+
+  // --- Chain Logic ---
   function updateMetaLabel() {
     if (!state.lastJson) {
       el.metaLabel.textContent = tr("meta_empty");
@@ -491,14 +661,41 @@
     });
   }
 
+  // Header buttons
+  el.btnGithub.addEventListener("click", () => {
+    if (invoke) {
+      invoke("open_external_url", { url: state.appInfo.repo_url }).catch(() => {});
+    }
+  });
+
+  el.btnUpdate.addEventListener("click", (e) => {
+    e.stopPropagation();
+    el.langMenu.classList.add("hidden");
+    el.updatePanel.classList.toggle("hidden");
+  });
+
+  el.chkPrerelease.addEventListener("change", () => {
+    state.includePrerelease = el.chkPrerelease.checked;
+    state.updateData = null;
+    saveSettings();
+    renderUpdateState();
+  });
+
+  el.btnCheckNow.addEventListener("click", () => runUpdateCheck(false));
+  el.btnInstallNow.addEventListener("click", installAvailableUpdate);
+
   el.btnLang.addEventListener("click", (e) => {
     e.stopPropagation();
+    el.updatePanel.classList.add("hidden");
     el.langMenu.classList.toggle("hidden");
   });
 
   document.addEventListener("click", (e) => {
-    if (!el.langMenu.contains(e.target) && e.target !== el.btnLang) {
+    if (!el.langMenu.contains(e.target) && !el.btnLang.contains(e.target)) {
       el.langMenu.classList.add("hidden");
+    }
+    if (!el.updatePanel.contains(e.target) && !el.btnUpdate.contains(e.target)) {
+      el.updatePanel.classList.add("hidden");
     }
   });
 
@@ -555,15 +752,25 @@
   el.btnCopy.addEventListener("click", copyJson);
   el.btnSave.addEventListener("click", saveJson);
 
-  // Initialize state, theme, and language, then reveal native window (zero white flash)
+  // Initialize
   loadSettings();
   applyTheme();
   refreshPortUi();
   applyLanguage();
 
   if (invoke) {
+    invoke("get_app_info")
+      .then((info) => {
+        state.appInfo = info;
+        updateModePillText();
+      })
+      .catch(() => {});
+
     requestAnimationFrame(() => {
       invoke("show_main_window").catch(() => {});
     });
+
+    // Silent background update check on startup
+    setTimeout(() => runUpdateCheck(true), 2000);
   }
 })();

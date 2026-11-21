@@ -1,4 +1,4 @@
-name: Build HopCraft (Windows x64 / x86 / ARM64)
+name: Build HopCraft (Portable & NSIS Installer)
 
 on:
   push:
@@ -38,6 +38,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
+      - name: Install Tauri CLI
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-tauri
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
@@ -48,25 +53,37 @@ jobs:
         if: matrix.arch == 'x64'
         run: cargo test --manifest-path src-tauri/Cargo.toml
 
-      - name: Build HopCraft.exe (${{ matrix.arch }})
-        run: cargo build --release --target ${{ matrix.target }} --manifest-path src-tauri/Cargo.toml
+      - name: Build Portable & NSIS Installer (${{ matrix.arch }})
+        working-directory: src-tauri
+        run: cargo tauri build --target ${{ matrix.target }} --bundles nsis
 
-      - name: Prepare architecture-labeled binary
+      - name: Collect Portable & NSIS Installer binaries
         shell: pwsh
         run: |
-          $src = "src-tauri/target/${{ matrix.target }}/release/HopCraft.exe"
-          if (-not (Test-Path $src)) { throw "Binary not found: $src" }
-          New-Item -ItemType Directory -Force -Path dist | Out-Null
-          $dst = "dist/HopCraft-windows-${{ matrix.arch }}.exe"
-          Copy-Item $src $dst
-          $sizeMB = [math]::Round((Get-Item $dst).Length / 1MB, 2)
-          Write-Host "Built $dst ($sizeMB MB)"
+          $portableSrc = "src-tauri/target/${{ matrix.target }}/release/HopCraft.exe"
+          if (-not (Test-Path $portableSrc)) { throw "Portable binary not found: $portableSrc" }
 
-      - name: Upload ${{ matrix.arch }} artifact
+          $nsisDir = "src-tauri/target/${{ matrix.target }}/release/bundle/nsis"
+          $setupSrc = Get-ChildItem -Path $nsisDir -Filter "*-setup.exe" | Select-Object -First 1
+          if (-not $setupSrc) { throw "NSIS installer not found in $nsisDir" }
+
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $portableDst = "dist/HopCraft-windows-${{ matrix.arch }}.exe"
+          $setupDst = "dist/HopCraft-windows-${{ matrix.arch }}-setup.exe"
+
+          Copy-Item $portableSrc $portableDst
+          Copy-Item $setupSrc.FullName $setupDst
+
+          $pSize = [math]::Round((Get-Item $portableDst).Length / 1MB, 2)
+          $sSize = [math]::Round((Get-Item $setupDst).Length / 1MB, 2)
+          Write-Host "Portable:  $portableDst ($pSize MB)"
+          Write-Host "Installer: $setupDst ($sSize MB)"
+
+      - name: Upload ${{ matrix.arch }} artifacts
         uses: actions/upload-artifact@v4
         with:
           name: HopCraft-windows-${{ matrix.arch }}
-          path: dist/HopCraft-windows-${{ matrix.arch }}.exe
+          path: dist/*.exe
           retention-days: 30
 
   release:
@@ -82,8 +99,20 @@ jobs:
           path: release-assets
           merge-multiple: true
 
-      - name: Create GitHub Release with x64, x86 & ARM64 binaries
+      - name: Check if tag is a pre-release
+        id: tagcheck
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [[ "$TAG" == *"-"* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release (Portable + NSIS for x64, x86 & ARM64)
         uses: softprops/action-gh-release@v2
         with:
           files: release-assets/*.exe
+          prerelease: ${{ steps.tagcheck.outputs.prerelease }}
           generate_release_notes: true

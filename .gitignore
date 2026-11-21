@@ -1,6 +1,8 @@
 # Rust / Tauri build artifacts
 /src-tauri/target/
 /src-tauri/gen/
+/dist/
+*.exe
 
 # OS & IDE
 .DS_Store
@@ -8,5 +10,3 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
-
-*.exe

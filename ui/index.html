@@ -17,7 +17,7 @@
         <div class="brand-text">
           <div class="brand-title-row">
             <h1 class="brand-name">HopCraft</h1>
-            <span class="pill pill-muted">v1.0.0</span>
+            <span id="app-version-pill" class="pill pill-muted">v1.0.0</span>
           </div>
           <p id="subtitle" class="brand-subtitle">VLESS • VMess • Trojan • Shadowsocks | Xray Chain JSON</p>
         </div>
@@ -28,6 +28,65 @@
           <span id="pill-hop1" class="pill pill-muted">● Hop 1</span>
           <span class="pill-arrow">→</span>
           <span id="pill-hop2" class="pill pill-muted">● Hop 2 (Exit)</span>
+        </div>
+
+        <!-- GitHub Repository Link Button -->
+        <button id="btn-github" class="icon-btn" type="button" title="GitHub Repository" aria-label="GitHub Repository">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.06 11.06 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.07.78 2.15 0 1.55-.01 2.8-.01 3.18 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/>
+          </svg>
+        </button>
+
+        <!-- Check for Updates Flyout -->
+        <div class="dropdown-wrap">
+          <button id="btn-update" class="icon-btn" type="button" title="Check for Updates" aria-label="Check for Updates">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span id="update-dot" class="notify-dot hidden"></span>
+          </button>
+
+          <div id="update-panel" class="dropdown-menu update-flyout hidden" role="dialog">
+            <div class="update-head">
+              <span id="lbl-update-title" class="update-title">Software Update</span>
+              <span id="update-mode-pill" class="pill pill-muted">x64 • Portable</span>
+            </div>
+
+            <label class="fluent-check update-pre-toggle">
+              <input id="chk-prerelease" type="checkbox" />
+              <span class="fluent-check-box">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="2 6.5 4.8 9.2 10 3"></polyline>
+                </svg>
+              </span>
+              <span id="lbl-prerelease">Include Pre-releases</span>
+            </label>
+
+            <div id="update-status-box" class="update-status-box">
+              <div id="update-status-text" class="update-status-text">Ready to check for updates.</div>
+              <div id="update-version-row" class="update-version-row hidden">
+                <span id="update-new-ver" class="pill pill-ok">v1.0.1</span>
+                <span id="update-pre-badge" class="pill pill-accent hidden">Pre-release</span>
+              </div>
+              <div id="update-progress-wrap" class="progress-wrap hidden">
+                <div class="progress-track">
+                  <div id="update-progress-bar" class="progress-bar" style="width: 0%"></div>
+                </div>
+                <div id="update-progress-text" class="progress-text mono">0%</div>
+              </div>
+            </div>
+
+            <div class="update-actions">
+              <button id="btn-check-now" class="btn btn-default btn-full" type="button">
+                <span id="lbl-check-now">Check for Updates</span>
+              </button>
+              <button id="btn-install-now" class="btn btn-primary btn-full hidden" type="button">
+                <span id="lbl-install-now">Download &amp; Update</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Globe Language Menu -->

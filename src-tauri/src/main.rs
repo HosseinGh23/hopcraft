@@ -3,10 +3,43 @@
 mod builder;
 mod error;
 mod parser;
+mod updater;
 
 use builder::{build_chain_config, ChainRequest, ChainResponse};
 use error::AppError;
 use parser::{parse_v2ray_link, LinkMeta};
+use updater::{
+    check_github_updates, download_and_apply, runtime_info, AppRuntimeInfo, UpdateCheckResult,
+};
+
+#[tauri::command]
+fn get_app_info() -> AppRuntimeInfo {
+    runtime_info()
+}
+
+#[tauri::command]
+fn open_external_url(url: String) -> Result<(), String> {
+    if !url.starts_with("https://") && !url.starts_with("http://") {
+        return Err("Invalid URL scheme".to_string());
+    }
+    open::that(url).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn check_for_updates(include_prerelease: bool) -> Result<UpdateCheckResult, String> {
+    check_github_updates(include_prerelease).await
+}
+
+#[tauri::command]
+async fn download_and_install_update(
+    app: tauri::AppHandle,
+    window: tauri::Window,
+    download_url: String,
+    asset_name: String,
+    is_installer: bool,
+) -> Result<(), String> {
+    download_and_apply(app, window, download_url, asset_name, is_installer).await
+}
 
 #[tauri::command]
 fn inspect_link(uri: String) -> Result<LinkMeta, AppError> {
@@ -81,6 +114,10 @@ fn show_main_window(window: tauri::Window) -> Result<(), String> {
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            get_app_info,
+            open_external_url,
+            check_for_updates,
+            download_and_install_update,
             inspect_link,
             build_chain,
             read_clipboard,

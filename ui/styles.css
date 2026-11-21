@@ -754,3 +754,109 @@ html[dir="rtl"] .toast-container {
     transform: translateY(0);
   }
 }
+
+
+/* Update Flyout & Progress Bar */
+.icon-btn {
+  position: relative;
+}
+
+.notify-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pill-ok-fg);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+.update-flyout {
+  min-width: 270px;
+  padding: 12px;
+  gap: 10px;
+}
+
+.update-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.update-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.update-pre-toggle {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.update-status-box {
+  background: var(--input-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  padding: 9px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.update-status-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.update-version-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--control-border);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--accent-btn);
+  border-radius: 999px;
+  transition: width 0.12s linear;
+}
+
+.progress-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: end;
+}
+
+.update-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}

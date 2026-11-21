@@ -1,6 +1,6 @@
 [package]
 name = "hopcraft"
-version = "1.0.0"
+version = "1.1.0"
 description = "HopCraft — Native Windows Xray Proxy Chain JSON Generator"
 authors = ["HosseinGh23"]
 edition = "2021"
@@ -20,6 +20,9 @@ url = "2"
 base64 = "0.22"
 arboard = "3"
 rfd = "0.15"
+reqwest = { version = "0.12", default-features = false, features = ["native-tls", "json"] }
+semver = "1"
+open = "5"
 
 [profile.release]
 panic = "abort"
