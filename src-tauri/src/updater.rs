@@ -80,6 +80,10 @@ pub fn current_arch() -> &'static str {
 
 pub fn is_installed_mode() -> bool {
     if let Ok(exe) = std::env::current_exe() {
+        let s = exe.to_string_lossy().to_lowercase();
+        if s.contains("windowsapps") || s.contains("hopcraft.msix") {
+            return true;
+        }
         if let Some(dir) = exe.parent() {
             return dir.join("uninstall.exe").exists();
         }
@@ -96,19 +100,60 @@ pub fn runtime_info() -> AppRuntimeInfo {
     }
 }
 
+#[cfg(target_os = "windows")]
+pub fn show_native_update_popup(title: &str, message: &str) {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+    let safe_title = title.replace('\'', "''");
+    let safe_msg = message.replace('\'', "''");
+
+    let ps_script = format!(
+        "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null; \
+         [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null; \
+         $template = @\"\n\
+         <toast>\n\
+           <visual>\n\
+             <binding template=\"ToastText02\">\n\
+               <text id=\"1\">{title}</text>\n\
+               <text id=\"2\">{msg}</text>\n\
+             </binding>\n\
+           </visual>\n\
+         </toast>\n\
+         \"@; \
+         $xml = New-Object Windows.Data.Xml.Dom.XmlDocument; \
+         $xml.LoadXml($template); \
+         $toast = New-Object Windows.UI.Notifications.ToastNotification $xml; \
+         [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('HopCraft').Show($toast)",
+        title = safe_title,
+        msg = safe_msg
+    );
+
+    let _ = Command::new("powershell")
+        .args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &ps_script])
+        .creation_flags(CREATE_NO_WINDOW)
+        .spawn();
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn show_native_update_popup(_title: &str, _message: &str) {}
+
 fn parse_semver_tag(tag: &str) -> Option<Version> {
     let trimmed = tag.trim().trim_start_matches('v').trim_start_matches('V');
     Version::parse(trimmed).ok()
 }
 
-fn select_asset<'a>(assets: &'a [GhAsset], arch: &str, prefer_installer: bool) -> Option<(&'a GhAsset, bool)> {
+fn select_asset<'a>(assets: &'a [GhAsset], arch: &str, prefer_package: bool) -> Option<(&'a GhAsset, bool)> {
     let arch_lower = arch.to_lowercase();
-    let exe_assets: Vec<&GhAsset> = assets
+    let pkg_assets: Vec<&GhAsset> = assets
         .iter()
-        .filter(|a| a.name.to_lowercase().ends_with(".exe"))
+        .filter(|a| {
+            let n = a.name.to_lowercase();
+            n.ends_with(".msix") || n.ends_with(".exe")
+        })
         .collect();
 
-    let matching_arch: Vec<&GhAsset> = exe_assets
+    let matching_arch: Vec<&GhAsset> = pkg_assets
         .iter()
         .copied()
         .filter(|a| {
@@ -117,23 +162,31 @@ fn select_asset<'a>(assets: &'a [GhAsset], arch: &str, prefer_installer: bool) -
         })
         .collect();
 
-    let is_setup = |a: &GhAsset| {
+    let is_pkg = |a: &GhAsset| {
         let n = a.name.to_lowercase();
-        n.contains("setup") || n.contains("installer")
+        n.ends_with(".msix") || n.contains("setup") || n.contains("installer")
     };
 
-    if prefer_installer {
-        if let Some(a) = matching_arch.iter().copied().find(|a| is_setup(a)) {
+    let is_portable = |a: &GhAsset| {
+        let n = a.name.to_lowercase();
+        n.ends_with(".exe") && (n.contains("portable") || !is_pkg(a))
+    };
+
+    if prefer_package {
+        if let Some(a) = matching_arch.iter().copied().find(|a| a.name.to_lowercase().ends_with(".msix")) {
             return Some((a, true));
         }
-        if let Some(a) = matching_arch.iter().copied().find(|a| !is_setup(a)) {
+        if let Some(a) = matching_arch.iter().copied().find(|a| is_pkg(a)) {
+            return Some((a, true));
+        }
+        if let Some(a) = matching_arch.iter().copied().find(|a| is_portable(a)) {
             return Some((a, false));
         }
     } else {
-        if let Some(a) = matching_arch.iter().copied().find(|a| !is_setup(a)) {
+        if let Some(a) = matching_arch.iter().copied().find(|a| is_portable(a)) {
             return Some((a, false));
         }
-        if let Some(a) = matching_arch.iter().copied().find(|a| is_setup(a)) {
+        if let Some(a) = matching_arch.iter().copied().find(|a| is_pkg(a)) {
             return Some((a, true));
         }
     }
@@ -310,9 +363,37 @@ pub async fn download_and_apply(
     );
 
     if is_installer {
-        Command::new(&target_file)
-            .spawn()
-            .map_err(|e| e.to_string())?;
+        #[cfg(target_os = "windows")]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            if target_file
+                .extension()
+                .and_then(|s| s.to_str())
+                .map(|s| s.eq_ignore_ascii_case("msix"))
+                .unwrap_or(false)
+            {
+                let ps = format!(
+                    "Add-AppxPackage -Path '{}'",
+                    target_file.display().to_string().replace('\'', "''")
+                );
+                Command::new("powershell")
+                    .args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &ps])
+                    .creation_flags(CREATE_NO_WINDOW)
+                    .spawn()
+                    .map_err(|e| e.to_string())?;
+            } else {
+                Command::new(&target_file)
+                    .spawn()
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            Command::new(&target_file)
+                .spawn()
+                .map_err(|e| e.to_string())?;
+        }
         app.exit(0);
         return Ok(());
     }
@@ -378,25 +459,25 @@ mod tests {
     }
 
     #[test]
-    fn selects_portable_and_setup_assets() {
+    fn selects_portable_and_msix_assets() {
         let assets = vec![
             GhAsset {
-                name: "HopCraft-windows-x64.exe".to_string(),
+                name: "HopCraft-windows-x64-portable.exe".to_string(),
                 browser_download_url: "https://example.com/portable.exe".to_string(),
                 size: 3_000_000,
             },
             GhAsset {
-                name: "HopCraft-windows-x64-setup.exe".to_string(),
-                browser_download_url: "https://example.com/setup.exe".to_string(),
+                name: "HopCraft-windows-x64.msix".to_string(),
+                browser_download_url: "https://example.com/app.msix".to_string(),
                 size: 4_000_000,
             },
         ];
         let (p_asset, p_inst) = select_asset(&assets, "x64", false).unwrap();
-        assert_eq!(p_asset.name, "HopCraft-windows-x64.exe");
+        assert_eq!(p_asset.name, "HopCraft-windows-x64-portable.exe");
         assert!(!p_inst);
 
-        let (i_asset, i_inst) = select_asset(&assets, "x64", true).unwrap();
-        assert_eq!(i_asset.name, "HopCraft-windows-x64-setup.exe");
-        assert!(i_inst);
+        let (m_asset, m_inst) = select_asset(&assets, "x64", true).unwrap();
+        assert_eq!(m_asset.name, "HopCraft-windows-x64.msix");
+        assert!(m_inst);
     }
 }

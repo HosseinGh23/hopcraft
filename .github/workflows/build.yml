@@ -1,4 +1,4 @@
-name: Build HopCraft (Portable & NSIS Installer)
+name: Build HopCraft (Portable & MSIX)
 
 on:
   push:
@@ -6,6 +6,8 @@ on:
     paths-ignore:
       - "README.md"
       - "README.fa.md"
+      - "README.zh.md"
+      - "README.ru.md"
       - "LICENSE"
       - "assets/**"
     tags:
@@ -25,12 +27,15 @@ jobs:
           - arch: x64
             runner: windows-latest
             target: x86_64-pc-windows-msvc
+            apx_arch: x64
           - arch: x86
             runner: windows-latest
             target: i686-pc-windows-msvc
+            apx_arch: x86
           - arch: arm64
             runner: windows-11-arm
             target: aarch64-pc-windows-msvc
+            apx_arch: arm64
 
     runs-on: ${{ matrix.runner }}
 
@@ -43,11 +48,6 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install Tauri CLI
-        uses: taiki-e/install-action@v2
-        with:
-          tool: tauri-cli
-
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
@@ -58,37 +58,89 @@ jobs:
         if: matrix.arch == 'x64'
         run: cargo test --manifest-path src-tauri/Cargo.toml
 
-      - name: Build Portable & NSIS Installer (${{ matrix.arch }})
-        working-directory: src-tauri
-        run: cargo tauri build --target ${{ matrix.target }} --bundles nsis
+      - name: Build HopCraft release binary (${{ matrix.arch }})
+        run: cargo build --release --target ${{ matrix.target }} --manifest-path src-tauri/Cargo.toml
 
-      - name: Collect Portable & NSIS Installer binaries
+      - name: Package Portable EXE & MSIX (${{ matrix.arch }})
         shell: pwsh
         run: |
-          $portableSrc = "src-tauri/target/${{ matrix.target }}/release/HopCraft.exe"
-          if (-not (Test-Path $portableSrc)) { throw "Portable binary not found: $portableSrc" }
-
-          $nsisDir = "src-tauri/target/${{ matrix.target }}/release/bundle/nsis"
-          $setupSrc = Get-ChildItem -Path $nsisDir -Filter "*-setup.exe" | Select-Object -First 1
-          if (-not $setupSrc) { throw "NSIS installer not found in $nsisDir" }
+          $exeSrc = "src-tauri/target/${{ matrix.target }}/release/HopCraft.exe"
+          if (-not (Test-Path $exeSrc)) { throw "Binary not found: $exeSrc" }
 
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          $portableDst = "dist/HopCraft-windows-${{ matrix.arch }}.exe"
-          $setupDst = "dist/HopCraft-windows-${{ matrix.arch }}-setup.exe"
+          $portableDst = "dist/HopCraft-windows-${{ matrix.arch }}-portable.exe"
+          $msixDst = "dist/HopCraft-windows-${{ matrix.arch }}.msix"
 
-          Copy-Item $portableSrc $portableDst
-          Copy-Item $setupSrc.FullName $setupDst
-
+          Copy-Item $exeSrc $portableDst
           $pSize = [math]::Round((Get-Item $portableDst).Length / 1MB, 2)
-          $sSize = [math]::Round((Get-Item $setupDst).Length / 1MB, 2)
-          Write-Host "Portable:  $portableDst ($pSize MB)"
-          Write-Host "Installer: $setupDst ($sSize MB)"
+          Write-Host "Portable: $portableDst ($pSize MB)"
+
+          $makeAppx = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "makeappx.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $makeAppx) {
+            throw "makeappx.exe not found in Windows SDK"
+          }
+
+          $stageDir = Join-Path $env:RUNNER_TEMP "msix_stage_${{ matrix.arch }}"
+          if (Test-Path $stageDir) { Remove-Item -Recurse -Force $stageDir }
+          New-Item -ItemType Directory -Force -Path (Join-Path $stageDir "Assets") | Out-Null
+
+          Copy-Item $exeSrc (Join-Path $stageDir "HopCraft.exe")
+          Copy-Item "src-tauri/icons/44x44.png" (Join-Path $stageDir "Assets\Square44x44Logo.png") -ErrorAction SilentlyContinue
+          if (-not (Test-Path (Join-Path $stageDir "Assets\Square44x44Logo.png"))) {
+            Copy-Item "src-tauri/icons/32x32.png" (Join-Path $stageDir "Assets\Square44x44Logo.png")
+          }
+          Copy-Item "src-tauri/icons/128x128.png" (Join-Path $stageDir "Assets\Square150x150Logo.png") -ErrorAction SilentlyContinue
+          if (-not (Test-Path (Join-Path $stageDir "Assets\Square150x150Logo.png"))) {
+            Copy-Item "src-tauri/icons/icon.png" (Join-Path $stageDir "Assets\Square150x150Logo.png")
+          }
+
+          $manifest = @"
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+  <Identity Name="HosseinGh23.HopCraft"
+            Publisher="CN=HosseinGh23"
+            Version="1.2.1.0"
+            ProcessorArchitecture="${{ matrix.apx_arch }}" />
+  <Properties>
+    <DisplayName>HopCraft</DisplayName>
+    <PublisherDisplayName>HosseinGh23</PublisherDisplayName>
+    <Logo>Assets\Square150x150Logo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+  <Applications>
+    <Application Id="HopCraft"
+                 Executable="HopCraft.exe"
+                 EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="HopCraft"
+                          Description="Native Windows Xray Proxy Chain JSON Generator"
+                          BackgroundColor="#202020"
+                          Square150x150Logo="Assets\Square150x150Logo.png"
+                          Square44x44Logo="Assets\Square44x44Logo.png" />
+    </Application>
+  </Applications>
+</Package>
+"@
+          Set-Content -Path (Join-Path $stageDir "AppxManifest.xml") -Value $manifest -Encoding UTF8
+
+          if (Test-Path $msixDst) { Remove-Item -Force $msixDst }
+          & $makeAppx.FullName pack /d $stageDir /p $msixDst /nv | Out-Null
+          $mSize = [math]::Round((Get-Item $msixDst).Length / 1MB, 2)
+          Write-Host "MSIX:     $msixDst ($mSize MB)"
 
       - name: Upload ${{ matrix.arch }} artifacts
         uses: actions/upload-artifact@v4
         with:
           name: HopCraft-windows-${{ matrix.arch }}
-          path: dist/*.exe
+          path: |
+            dist/*-portable.exe
+            dist/*.msix
           retention-days: 30
 
   release:
@@ -115,9 +167,11 @@ jobs:
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create GitHub Release (Portable + NSIS for x64, x86 & ARM64)
+      - name: Create GitHub Release (Portable + MSIX for x64, x86 & ARM64)
         uses: softprops/action-gh-release@v2
         with:
-          files: release-assets/*.exe
+          files: |
+            release-assets/*-portable.exe
+            release-assets/*.msix
           prerelease: ${{ steps.tagcheck.outputs.prerelease }}
           generate_release_notes: true

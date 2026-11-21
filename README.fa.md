@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/logo.png" alt="لوگوی HopCraft" width="110" />
   <h1>HopCraft</h1>
-  <p><a href="README.md">English</a> • <strong>فارسی (Persian)</strong></p>
+  <p><a href="README.md">English</a> • <strong>فارسی</strong> • <a href="README.zh.md">中文 (简体)</a> • <a href="README.ru.md">Русский</a></p>
   <p><strong>اپلیکیشن سریع و نیتیو ویندوز برای زنجیره‌سازی (Chain) کانفیگ‌های V2Ray / Xray و تولید فایل JSON تمیز</strong></p>
 
   <p>
@@ -49,15 +49,15 @@ Your Device  ──▶  Hop 1 (Bridge / کانفیگ اول)  ──▶  Hop 2 (
 
 ## دانلود
 
-نسخه **نصب‌کننده (NSIS Installer)** یا نسخه **پرتابل (بدون نیاز به نصب)** متناسب با معماری ویندوز خود را از صفحه [**Releases**](https://github.com/HosseinGh23/hopcraft/releases) دانلود کنید:
+نسخه **نصب‌کننده (MSIX Package)** یا نسخه **پرتابل (بدون نیاز به نصب)** متناسب با معماری ویندوز خود را از صفحه [**Releases**](https://github.com/HosseinGh23/hopcraft/releases) دانلود کنید:
 
 </div>
 
 | معماری ویندوز | نسخه نصبی NSIS (پیشنهادی) | نسخه پرتابل (بدون نصب) |
 | :--- | :--- | :--- |
-| **Windows x64** | `HopCraft-windows-x64-setup.exe` | `HopCraft-windows-x64.exe` |
-| **Windows x86** | `HopCraft-windows-x86-setup.exe` | `HopCraft-windows-x86.exe` |
-| **Windows ARM64** | `HopCraft-windows-arm64-setup.exe` | `HopCraft-windows-arm64.exe` |
+| **Windows x64** | `HopCraft-windows-x64.msix` | `HopCraft-windows-x64-portable.exe` |
+| **Windows x86** | `HopCraft-windows-x86.msix` | `HopCraft-windows-x86-portable.exe` |
+| **Windows ARM64** | `HopCraft-windows-arm64.msix` | `HopCraft-windows-arm64-portable.exe` |
 
 <div dir="rtl">
 
@@ -122,7 +122,7 @@ xray run -c config.json
 
 ```powershell
 cd src-tauri
-cargo tauri build --bundles nsis
+cargo tauri build 
 ```
 
 <div dir="rtl">
@@ -131,7 +131,7 @@ cargo tauri build --bundles nsis
 
 ## نقشه راه (Roadmap)
 
-- [x] بیلد کامل ویندوز (`x64`، `x86`، `ARM64`) — نسخه پرتابل و نصب‌کننده NSIS
+- [x] بیلد کامل ویندوز (`x64`، `x86`، `ARM64`) — نسخه پرتابل و بسته MSIX
 - [x] رابط کاربری ۴ زبانه (`EN`، `ZH`، `FA`، `RU`) + تم تاریک و روشن
 - [x] آپدیتر داخلی گیت‌هاب همراه با پنجره اطلاع‌رسانی و پشتیبانی از Pre-release
 - [ ] پشتیبانی از macOS و Linux

@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/logo.png" alt="HopCraft Logo" width="110" />
   <h1>HopCraft</h1>
-  <p><strong>English</strong> • <a href="README.fa.md">فارسی (Persian)</a></p>
+  <p><strong>English</strong> • <a href="README.fa.md">فارسی</a> • <a href="README.zh.md">中文 (简体)</a> • <a href="README.ru.md">Русский</a></p>
   <p><strong>Fast, Native Windows Desktop App for Chaining V2Ray / Xray Proxy Configs into Clean JSON</strong></p>
 
   <p>
@@ -35,7 +35,7 @@ Built with **Rust** and **Tauri v2**, HopCraft launches instantly, requires zero
 - **Multi-Protocol Chaining:** Mix and match `VLESS`, `VMess`, `Trojan`, and `Shadowsocks (ss://)` across Hop 1 and Hop 2.
 - **Guaranteed Exit IP:** Automatically configures `sockopt.dialerProxy` so Hop 2 always dials through Hop 1.
 - **Flexible Local Inbounds:** Use a single **Mixed (SOCKS5 + HTTP)** port or separate custom `SOCKS5` and `HTTP` ports (matching ports auto-merge into `mixed`).
-- **Built-in Updater:** Automatic startup update popup plus manual checking for stable or **Pre-release** builds with live download progress for both Portable and NSIS Installer editions.
+- **Built-in Updater:** Automatic startup update popup plus manual checking for stable or **Pre-release** builds with live download progress for both Portable and MSIX Package editions.
 - **Multi-Language UI:** Switch instantly between **English**, **中文 (简体)**, **فارسی (RTL)**, and **Русский**.
 - **Native Windows 11 Experience:** Fluent Design UI with synced Light/Dark title bar, live URI validation pills, and syntax-highlighted JSON output.
 
@@ -43,13 +43,13 @@ Built with **Rust** and **Tauri v2**, HopCraft launches instantly, requires zero
 
 ## Download
 
-Download either the **NSIS Installer** or the **Portable** executable for your Windows architecture from the [**Releases**](https://github.com/HosseinGh23/hopcraft/releases) page:
+Download either the **MSIX Package** or the **Portable** executable for your Windows architecture from the [**Releases**](https://github.com/HosseinGh23/hopcraft/releases) page:
 
-| Architecture | NSIS Installer (Recommended) | Portable (No Install) |
+| Architecture | MSIX Package (Recommended) | Portable (No Install) |
 | :--- | :--- | :--- |
-| **Windows x64** | `HopCraft-windows-x64-setup.exe` | `HopCraft-windows-x64.exe` |
-| **Windows x86** | `HopCraft-windows-x86-setup.exe` | `HopCraft-windows-x86.exe` |
-| **Windows ARM64** | `HopCraft-windows-arm64-setup.exe` | `HopCraft-windows-arm64.exe` |
+| **Windows x64** | `HopCraft-windows-x64.msix` | `HopCraft-windows-x64-portable.exe` |
+| **Windows x86** | `HopCraft-windows-x86.msix` | `HopCraft-windows-x86-portable.exe` |
+| **Windows ARM64** | `HopCraft-windows-arm64.msix` | `HopCraft-windows-arm64-portable.exe` |
 
 > **Note:** macOS and Linux builds are planned for future releases.
 
@@ -99,14 +99,14 @@ Requires [Rust](https://rustup.rs/) (stable), Tauri CLI v2 (`cargo install tauri
 
 ```powershell
 cd src-tauri
-cargo tauri build --bundles nsis
+cargo tauri build 
 ```
 
 ---
 
 ## Roadmap
 
-- [x] Windows builds (`x64`, `x86`, `ARM64`) — Portable & NSIS Installer
+- [x] Windows builds (`x64`, `x86`, `ARM64`) — Portable & MSIX Package
 - [x] 4-language UI (`EN`, `ZH`, `FA`, `RU`) + Light/Dark theme
 - [x] In-app GitHub updater with Pre-release channel support
 - [ ] macOS & Linux support

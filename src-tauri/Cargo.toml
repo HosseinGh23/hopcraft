@@ -1,6 +1,6 @@
 [package]
 name = "hopcraft"
-version = "1.2.0"
+version = "1.2.1"
 description = "HopCraft — Native Windows Xray Proxy Chain JSON Generator"
 authors = ["HosseinGh23"]
 edition = "2021"

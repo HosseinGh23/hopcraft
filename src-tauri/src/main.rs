@@ -9,7 +9,8 @@ use builder::{build_chain_config, ChainRequest, ChainResponse};
 use error::AppError;
 use parser::{parse_v2ray_link, LinkMeta};
 use updater::{
-    check_github_updates, download_and_apply, runtime_info, AppRuntimeInfo, UpdateCheckResult,
+    check_github_updates, download_and_apply, runtime_info, show_native_update_popup,
+    AppRuntimeInfo, UpdateCheckResult,
 };
 
 #[tauri::command]
@@ -27,7 +28,14 @@ fn open_external_url(url: String) -> Result<(), String> {
 
 #[tauri::command]
 async fn check_for_updates(include_prerelease: bool) -> Result<UpdateCheckResult, String> {
-    check_github_updates(include_prerelease).await
+    let res = check_github_updates(include_prerelease).await?;
+    if res.has_update {
+        show_native_update_popup(
+            "new update available",
+            &format!("HopCraft {} is ready to download.", res.tag_name),
+        );
+    }
+    Ok(res)
 }
 
 #[tauri::command]

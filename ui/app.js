@@ -10,7 +10,7 @@
     theme: "dark",
     includePrerelease: false,
     appInfo: {
-      version: "1.2.0",
+      version: "1.2.1",
       arch: "x64",
       is_installed: false,
       repo_url: "https://github.com/HosseinGh23/hopcraft"
@@ -427,10 +427,9 @@
       renderUpdateState();
 
       if (res.has_update) {
-        if (silent && !state.modalDismissed) {
+        showToast("new update available", `${res.tag_name} • ${tr("update_available", { tag: res.tag_name })}`, false);
+        if (!state.modalDismissed || !silent) {
           openUpdateModal(res);
-        } else if (!silent) {
-          showToast(tr("update_title"), tr("update_available", { tag: res.tag_name }), false);
         }
       }
     } catch (err) {
