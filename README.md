@@ -1,6 +1,7 @@
 <div align="center">
   <img src="assets/logo.png" alt="HopCraft Logo" width="110" />
   <h1>HopCraft</h1>
+  <p><strong>English</strong> • <a href="README.fa.md">فارسی (Persian)</a></p>
   <p><strong>Fast, Native Windows Desktop App for Chaining V2Ray / Xray Proxy Configs into Clean JSON</strong></p>
 
   <p>
@@ -34,7 +35,7 @@ Built with **Rust** and **Tauri v2**, HopCraft launches instantly, requires zero
 - **Multi-Protocol Chaining:** Mix and match `VLESS`, `VMess`, `Trojan`, and `Shadowsocks (ss://)` across Hop 1 and Hop 2.
 - **Guaranteed Exit IP:** Automatically configures `sockopt.dialerProxy` so Hop 2 always dials through Hop 1.
 - **Flexible Local Inbounds:** Use a single **Mixed (SOCKS5 + HTTP)** port or separate custom `SOCKS5` and `HTTP` ports (matching ports auto-merge into `mixed`).
-- **Built-in Updater:** Check for stable or **Pre-release** updates directly from the app header with live download progress for both Portable and NSIS Installer editions.
+- **Built-in Updater:** Automatic startup update popup plus manual checking for stable or **Pre-release** builds with live download progress for both Portable and NSIS Installer editions.
 - **Multi-Language UI:** Switch instantly between **English**, **中文 (简体)**, **فارسی (RTL)**, and **Русский**.
 - **Native Windows 11 Experience:** Fluent Design UI with synced Light/Dark title bar, live URI validation pills, and syntax-highlighted JSON output.
 

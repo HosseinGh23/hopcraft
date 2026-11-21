@@ -17,7 +17,7 @@
         <div class="brand-text">
           <div class="brand-title-row">
             <h1 class="brand-name">HopCraft</h1>
-            <span id="app-version-pill" class="pill pill-muted">v1.0.0</span>
+            <span id="app-version-pill" class="pill pill-muted">v1.2.0</span>
           </div>
           <p id="subtitle" class="brand-subtitle">VLESS • VMess • Trojan • Shadowsocks | Xray Chain JSON</p>
         </div>
@@ -270,6 +270,65 @@
         <pre id="json-output" class="code-view"><span id="json-placeholder" class="code-placeholder">Generated Xray JSON will appear here...</span></pre>
       </div>
     </section>
+  </div>
+
+
+  <!-- Modern Centered Update Modal (WinUI 3 ContentDialog) -->
+  <div id="update-modal-backdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-update-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-brand">
+          <img src="logo.png" alt="HopCraft" class="modal-logo" draggable="false" />
+          <div>
+            <h2 id="modal-update-title" class="modal-title">Update Available</h2>
+            <p id="modal-update-subtitle" class="modal-subtitle">A new version of HopCraft is ready to install.</p>
+          </div>
+        </div>
+        <button id="btn-modal-close" class="icon-btn btn-subtle-icon" type="button" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-version-bar" dir="ltr">
+        <span id="modal-cur-ver" class="pill pill-muted">v1.2.0</span>
+        <span class="pill-arrow">→</span>
+        <span id="modal-new-ver" class="pill pill-ok">v1.2.1</span>
+        <span id="modal-pre-badge" class="pill pill-accent hidden">Pre-release</span>
+        <span id="modal-arch-pill" class="pill pill-muted modal-arch-right">x64 • Portable</span>
+      </div>
+
+      <div class="modal-notes-wrap">
+        <div id="modal-notes-title" class="modal-notes-label">What's New</div>
+        <div id="modal-notes-body" class="modal-notes-body">Bug fixes and performance improvements.</div>
+      </div>
+
+      <div id="modal-progress-wrap" class="progress-wrap hidden">
+        <div class="progress-track">
+          <div id="modal-progress-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
+        <div class="modal-progress-meta">
+          <span id="modal-progress-status" class="progress-status">Downloading update...</span>
+          <span id="modal-progress-text" class="progress-text mono">0%</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-modal-later" class="btn btn-default" type="button">
+          <span id="lbl-modal-later">Later</span>
+        </button>
+        <button id="btn-modal-update" class="btn btn-primary" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span id="lbl-modal-update">Update Now</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script src="i18n.js"></script>

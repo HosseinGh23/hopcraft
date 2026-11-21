@@ -10,7 +10,7 @@
     theme: "dark",
     includePrerelease: false,
     appInfo: {
-      version: "1.0.0",
+      version: "1.2.0",
       arch: "x64",
       is_installed: false,
       repo_url: "https://github.com/HosseinGh23/hopcraft"
@@ -18,6 +18,7 @@
     updateData: null,
     isCheckingUpdate: false,
     isDownloadingUpdate: false,
+    modalDismissed: false,
     lastJson: "",
     lastLines: 0,
     lastBytes: 0,
@@ -50,6 +51,24 @@
     lblCheckNow: $("lbl-check-now"),
     btnInstallNow: $("btn-install-now"),
     lblInstallNow: $("lbl-install-now"),
+    updateModalBackdrop: $("update-modal-backdrop"),
+    modalUpdateTitle: $("modal-update-title"),
+    modalUpdateSubtitle: $("modal-update-subtitle"),
+    btnModalClose: $("btn-modal-close"),
+    modalCurVer: $("modal-cur-ver"),
+    modalNewVer: $("modal-new-ver"),
+    modalPreBadge: $("modal-pre-badge"),
+    modalArchPill: $("modal-arch-pill"),
+    modalNotesTitle: $("modal-notes-title"),
+    modalNotesBody: $("modal-notes-body"),
+    modalProgressWrap: $("modal-progress-wrap"),
+    modalProgressBar: $("modal-progress-bar"),
+    modalProgressStatus: $("modal-progress-status"),
+    modalProgressText: $("modal-progress-text"),
+    btnModalLater: $("btn-modal-later"),
+    lblModalLater: $("lbl-modal-later"),
+    btnModalUpdate: $("btn-modal-update"),
+    lblModalUpdate: $("lbl-modal-update"),
     btnLang: $("btn-lang"),
     langMenu: $("lang-menu"),
     btnTheme: $("btn-theme"),
@@ -116,6 +135,11 @@
     ) {
       e.preventDefault();
       if (ctrl && key === "s") saveJson();
+      return;
+    }
+
+    if (e.key === "Escape" && !state.isDownloadingUpdate) {
+      closeUpdateModal();
       return;
     }
 
@@ -255,8 +279,11 @@
     const modeLabel = state.appInfo.is_installed
       ? tr("update_mode_installed")
       : tr("update_mode_portable");
-    el.updateModePill.textContent = `${state.appInfo.arch} • ${modeLabel}`;
+    const modeBadgeText = `${state.appInfo.arch} • ${modeLabel}`;
+    el.updateModePill.textContent = modeBadgeText;
+    el.modalArchPill.textContent = modeBadgeText;
     el.appVersionPill.textContent = `v${state.appInfo.version}`;
+    el.modalCurVer.textContent = `v${state.appInfo.version}`;
   }
 
   function applyLanguage() {
@@ -280,6 +307,16 @@
     el.updatePreBadge.textContent = tr("update_prerelease_badge");
     el.lblCheckNow.textContent = tr("update_btn_check");
     el.lblInstallNow.textContent = tr("update_btn_install");
+    el.modalUpdateTitle.textContent = tr("update_modal_title");
+    el.modalUpdateSubtitle.textContent = tr("update_modal_subtitle");
+    el.modalNotesTitle.textContent = tr("update_modal_notes_title");
+    el.modalPreBadge.textContent = tr("update_prerelease_badge");
+    el.lblModalUpdate.textContent = tr("update_modal_btn_now");
+    el.lblModalLater.textContent = tr("update_modal_btn_later");
+    if (state.updateData) {
+      el.modalNotesBody.textContent =
+        (state.updateData.release_notes || "").trim() || tr("update_modal_no_notes");
+    }
     el.btnLang.title = tr("lang_tooltip");
     el.btnTheme.title = tr("theme_tooltip");
 
@@ -317,6 +354,28 @@
   }
 
   // --- Updater Logic ---
+  function openUpdateModal(u) {
+    if (!u || !u.has_update) return;
+    el.modalCurVer.textContent = `v${u.current_version}`;
+    el.modalNewVer.textContent = u.tag_name;
+    el.modalPreBadge.classList.toggle("hidden", !u.is_prerelease);
+    el.modalNotesBody.textContent =
+      (u.release_notes || "").trim() || tr("update_modal_no_notes");
+    el.modalProgressWrap.classList.add("hidden");
+    el.btnModalUpdate.disabled = false;
+    el.btnModalLater.disabled = false;
+    el.btnModalClose.disabled = false;
+    el.updatePanel.classList.add("hidden");
+    el.langMenu.classList.add("hidden");
+    el.updateModalBackdrop.classList.remove("hidden");
+  }
+
+  function closeUpdateModal() {
+    if (state.isDownloadingUpdate) return;
+    state.modalDismissed = true;
+    el.updateModalBackdrop.classList.add("hidden");
+  }
+
   function renderUpdateState() {
     if (state.isDownloadingUpdate) return;
 
@@ -367,8 +426,12 @@
       state.isCheckingUpdate = false;
       renderUpdateState();
 
-      if (!silent && res.has_update) {
-        showToast(tr("update_title"), tr("update_available", { tag: res.tag_name }), false);
+      if (res.has_update) {
+        if (silent && !state.modalDismissed) {
+          openUpdateModal(res);
+        } else if (!silent) {
+          showToast(tr("update_title"), tr("update_available", { tag: res.tag_name }), false);
+        }
       }
     } catch (err) {
       state.isCheckingUpdate = false;
@@ -397,6 +460,13 @@
     el.updateProgressWrap.classList.remove("hidden");
     el.updateProgressBar.style.width = "0%";
     el.updateProgressText.textContent = "0%";
+    el.btnModalUpdate.disabled = true;
+    el.btnModalLater.disabled = true;
+    el.btnModalClose.disabled = true;
+    el.modalProgressWrap.classList.remove("hidden");
+    el.modalProgressBar.style.width = "0%";
+    el.modalProgressStatus.textContent = tr("update_downloading");
+    el.modalProgressText.textContent = "0%";
 
     try {
       await invoke("download_and_install_update", {
@@ -411,6 +481,10 @@
       el.btnInstallNow.disabled = false;
       el.chkPrerelease.disabled = false;
       el.updateProgressWrap.classList.add("hidden");
+      el.modalProgressWrap.classList.add("hidden");
+      el.btnModalUpdate.disabled = false;
+      el.btnModalLater.disabled = false;
+      el.btnModalClose.disabled = false;
       el.updateStatusText.textContent = tr("update_failed", { err: String(err) });
       showToast(tr("update_title"), String(err), true);
     }
@@ -420,14 +494,17 @@
     listenEvent("update-progress", (event) => {
       const p = event.payload || {};
       const pct = Math.min(100, Math.max(0, Number(p.percent || 0)));
+      const progressStr =
+        p.total > 0
+          ? `${pct}% (${formatMB(p.downloaded)} / ${formatMB(p.total)} MB)`
+          : `${formatMB(p.downloaded || 0)} MB`;
       el.updateProgressBar.style.width = `${pct}%`;
-      if (p.total > 0) {
-        el.updateProgressText.textContent = `${pct}% (${formatMB(p.downloaded)} / ${formatMB(p.total)} MB)`;
-      } else {
-        el.updateProgressText.textContent = `${formatMB(p.downloaded || 0)} MB`;
-      }
+      el.updateProgressText.textContent = progressStr;
+      el.modalProgressBar.style.width = `${pct}%`;
+      el.modalProgressText.textContent = progressStr;
       if (pct >= 100) {
         el.updateStatusText.textContent = tr("update_applying");
+        el.modalProgressStatus.textContent = tr("update_applying");
       }
     });
   }
@@ -683,6 +760,12 @@
 
   el.btnCheckNow.addEventListener("click", () => runUpdateCheck(false));
   el.btnInstallNow.addEventListener("click", installAvailableUpdate);
+  el.btnModalUpdate.addEventListener("click", installAvailableUpdate);
+  el.btnModalLater.addEventListener("click", closeUpdateModal);
+  el.btnModalClose.addEventListener("click", closeUpdateModal);
+  el.updateModalBackdrop.addEventListener("click", (e) => {
+    if (e.target === el.updateModalBackdrop) closeUpdateModal();
+  });
 
   el.btnLang.addEventListener("click", (e) => {
     e.stopPropagation();
