@@ -49,15 +49,15 @@ Your Device  ──▶  Hop 1 (Bridge / کانفیگ اول)  ──▶  Hop 2 (
 
 ## دانلود
 
-نسخه **نصب‌کننده (MSIX Package)** یا نسخه **پرتابل (بدون نیاز به نصب)** متناسب با معماری ویندوز خود را از صفحه [**Releases**](https://github.com/HosseinGh23/hopcraft/releases) دانلود کنید:
+نسخه **نصب‌کننده (Inno Setup Installer)** یا نسخه **پرتابل (بدون نیاز به نصب)** متناسب با معماری ویندوز خود را از صفحه [**Releases**](https://github.com/HosseinGh23/hopcraft/releases) دانلود کنید:
 
 </div>
 
 | معماری ویندوز | نسخه نصبی NSIS (پیشنهادی) | نسخه پرتابل (بدون نصب) |
 | :--- | :--- | :--- |
-| **Windows x64** | `HopCraft-windows-x64.msix` | `HopCraft-windows-x64-portable.exe` |
-| **Windows x86** | `HopCraft-windows-x86.msix` | `HopCraft-windows-x86-portable.exe` |
-| **Windows ARM64** | `HopCraft-windows-arm64.msix` | `HopCraft-windows-arm64-portable.exe` |
+| **Windows x64** | `HopCraft-windows-x64-setup.exe` | `HopCraft-windows-x64-portable.exe` |
+| **Windows x86** | `HopCraft-windows-x86-setup.exe` | `HopCraft-windows-x86-portable.exe` |
+| **Windows ARM64** | `HopCraft-windows-arm64-setup.exe` | `HopCraft-windows-arm64-portable.exe` |
 
 <div dir="rtl">
 
@@ -131,7 +131,7 @@ cargo tauri build
 
 ## نقشه راه (Roadmap)
 
-- [x] بیلد کامل ویندوز (`x64`، `x86`، `ARM64`) — نسخه پرتابل و بسته MSIX
+- [x] بیلد کامل ویندوز (`x64`، `x86`، `ARM64`) — نسخه پرتابل و نصب‌کننده مدرن Inno Setup
 - [x] رابط کاربری ۴ زبانه (`EN`، `ZH`، `FA`، `RU`) + تم تاریک و روشن
 - [x] آپدیتر داخلی گیت‌هاب همراه با پنجره اطلاع‌رسانی و پشتیبانی از Pre-release
 - [ ] پشتیبانی از macOS و Linux

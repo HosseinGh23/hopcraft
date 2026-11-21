@@ -35,7 +35,7 @@ Your Device  ──▶  Hop 1 (Bridge / Промежуточный узел)  �
 - **Цепочки из разных протоколов:** свободное сочетание `VLESS`, `VMess`, `Trojan` и `Shadowsocks (ss://)` для Hop 1 и Hop 2.
 - **Гарантированный выходной IP:** автоматическая настройка `sockopt.dialerProxy`, чтобы Hop 2 подключался через Hop 1.
 - **Гибкие локальные порты:** единый порт **Mixed (SOCKS5 + HTTP)** или раздельные порты `SOCKS5` и `HTTP` (одинаковые порты автоматически объединяются в `mixed`).
-- **Встроенный обновлятор:** автоматическое уведомление при запуске, ручная проверка релизов и **Pre-release** с индикатором загрузки для Portable и Пакет MSIXа.
+- **Встроенный обновлятор:** автоматическое уведомление при запуске, ручная проверка релизов и **Pre-release** с индикатором загрузки для Portable и Установщик Inno Setupа.
 - **4 языка интерфейса:** мгновенное переключение между **Русский**, **English**, **فارسی** и **中文 (简体)**.
 - **Нативный стиль Windows 11:** дизайн Fluent, синхронизация тёмной/светлой темы заголовка окна, проверка ссылок в реальном времени и подсветка JSON.
 
@@ -43,13 +43,13 @@ Your Device  ──▶  Hop 1 (Bridge / Промежуточный узел)  �
 
 ## Скачать
 
-Выберите **Пакет MSIX** или **Portable-версию** под архитектуру вашего Windows на странице [**Releases**](https://github.com/HosseinGh23/hopcraft/releases):
+Выберите **Установщик Inno Setup** или **Portable-версию** под архитектуру вашего Windows на странице [**Releases**](https://github.com/HosseinGh23/hopcraft/releases):
 
 | Архитектура Windows | Установщик NSIS (рекомендуется) | Portable (без установки) |
 | :--- | :--- | :--- |
-| **Windows x64** | `HopCraft-windows-x64.msix` | `HopCraft-windows-x64-portable.exe` |
-| **Windows x86** | `HopCraft-windows-x86.msix` | `HopCraft-windows-x86-portable.exe` |
-| **Windows ARM64** | `HopCraft-windows-arm64.msix` | `HopCraft-windows-arm64-portable.exe` |
+| **Windows x64** | `HopCraft-windows-x64-setup.exe` | `HopCraft-windows-x64-portable.exe` |
+| **Windows x86** | `HopCraft-windows-x86-setup.exe` | `HopCraft-windows-x86-portable.exe` |
+| **Windows ARM64** | `HopCraft-windows-arm64-setup.exe` | `HopCraft-windows-arm64-portable.exe` |
 
 > **Примечание:** поддержка macOS и Linux появится в будущих версиях.
 

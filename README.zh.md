@@ -43,13 +43,13 @@ Your Device  ──▶  Hop 1 (Bridge / 中转节点)  ──▶  Hop 2 (Exit Se
 
 ## 下载
 
-前往 [**Releases**](https://github.com/HosseinGh23/hopcraft/releases) 页面下载对应 Windows 架构的 **MSIX 安装包** 或 **便携版** 可执行文件：
+前往 [**Releases**](https://github.com/HosseinGh23/hopcraft/releases) 页面下载对应 Windows 架构的 **Inno Setup 安装包** 或 **便携版** 可执行文件：
 
-| Windows 架构 | MSIX 安装包（推荐） | 便携版（免安装） |
+| Windows 架构 | Inno Setup 安装包（推荐） | 便携版（免安装） |
 | :--- | :--- | :--- |
-| **Windows x64** | `HopCraft-windows-x64.msix` | `HopCraft-windows-x64-portable.exe` |
-| **Windows x86** | `HopCraft-windows-x86.msix` | `HopCraft-windows-x86-portable.exe` |
-| **Windows ARM64** | `HopCraft-windows-arm64.msix` | `HopCraft-windows-arm64-portable.exe` |
+| **Windows x64** | `HopCraft-windows-x64-setup.exe` | `HopCraft-windows-x64-portable.exe` |
+| **Windows x86** | `HopCraft-windows-x86-setup.exe` | `HopCraft-windows-x86-portable.exe` |
+| **Windows ARM64** | `HopCraft-windows-arm64-setup.exe` | `HopCraft-windows-arm64-portable.exe` |
 
 > **提示：** macOS 与 Linux 支持将在后续版本中提供。
 

@@ -80,12 +80,9 @@ pub fn current_arch() -> &'static str {
 
 pub fn is_installed_mode() -> bool {
     if let Ok(exe) = std::env::current_exe() {
-        let s = exe.to_string_lossy().to_lowercase();
-        if s.contains("windowsapps") || s.contains("hopcraft.msix") {
-            return true;
-        }
         if let Some(dir) = exe.parent() {
-            return dir.join("uninstall.exe").exists();
+            // Inno Setup creates unins000.exe; NSIS creates uninstall.exe
+            return dir.join("unins000.exe").exists() || dir.join("uninstall.exe").exists();
         }
     }
     false
@@ -143,17 +140,14 @@ fn parse_semver_tag(tag: &str) -> Option<Version> {
     Version::parse(trimmed).ok()
 }
 
-fn select_asset<'a>(assets: &'a [GhAsset], arch: &str, prefer_package: bool) -> Option<(&'a GhAsset, bool)> {
+fn select_asset<'a>(assets: &'a [GhAsset], arch: &str, prefer_installer: bool) -> Option<(&'a GhAsset, bool)> {
     let arch_lower = arch.to_lowercase();
-    let pkg_assets: Vec<&GhAsset> = assets
+    let exe_assets: Vec<&GhAsset> = assets
         .iter()
-        .filter(|a| {
-            let n = a.name.to_lowercase();
-            n.ends_with(".msix") || n.ends_with(".exe")
-        })
+        .filter(|a| a.name.to_lowercase().ends_with(".exe"))
         .collect();
 
-    let matching_arch: Vec<&GhAsset> = pkg_assets
+    let matching_arch: Vec<&GhAsset> = exe_assets
         .iter()
         .copied()
         .filter(|a| {
@@ -162,21 +156,18 @@ fn select_asset<'a>(assets: &'a [GhAsset], arch: &str, prefer_package: bool) -> 
         })
         .collect();
 
-    let is_pkg = |a: &GhAsset| {
+    let is_setup = |a: &GhAsset| {
         let n = a.name.to_lowercase();
-        n.ends_with(".msix") || n.contains("setup") || n.contains("installer")
+        n.contains("setup") || n.contains("installer")
     };
 
     let is_portable = |a: &GhAsset| {
         let n = a.name.to_lowercase();
-        n.ends_with(".exe") && (n.contains("portable") || !is_pkg(a))
+        n.contains("portable") || !is_setup(a)
     };
 
-    if prefer_package {
-        if let Some(a) = matching_arch.iter().copied().find(|a| a.name.to_lowercase().ends_with(".msix")) {
-            return Some((a, true));
-        }
-        if let Some(a) = matching_arch.iter().copied().find(|a| is_pkg(a)) {
+    if prefer_installer {
+        if let Some(a) = matching_arch.iter().copied().find(|a| is_setup(a)) {
             return Some((a, true));
         }
         if let Some(a) = matching_arch.iter().copied().find(|a| is_portable(a)) {
@@ -186,7 +177,7 @@ fn select_asset<'a>(assets: &'a [GhAsset], arch: &str, prefer_package: bool) -> 
         if let Some(a) = matching_arch.iter().copied().find(|a| is_portable(a)) {
             return Some((a, false));
         }
-        if let Some(a) = matching_arch.iter().copied().find(|a| is_pkg(a)) {
+        if let Some(a) = matching_arch.iter().copied().find(|a| is_setup(a)) {
             return Some((a, true));
         }
     }
@@ -363,37 +354,10 @@ pub async fn download_and_apply(
     );
 
     if is_installer {
-        #[cfg(target_os = "windows")]
-        {
-            use std::os::windows::process::CommandExt;
-            const CREATE_NO_WINDOW: u32 = 0x08000000;
-            if target_file
-                .extension()
-                .and_then(|s| s.to_str())
-                .map(|s| s.eq_ignore_ascii_case("msix"))
-                .unwrap_or(false)
-            {
-                let ps = format!(
-                    "Add-AppxPackage -Path '{}'",
-                    target_file.display().to_string().replace('\'', "''")
-                );
-                Command::new("powershell")
-                    .args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &ps])
-                    .creation_flags(CREATE_NO_WINDOW)
-                    .spawn()
-                    .map_err(|e| e.to_string())?;
-            } else {
-                Command::new(&target_file)
-                    .spawn()
-                    .map_err(|e| e.to_string())?;
-            }
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            Command::new(&target_file)
-                .spawn()
-                .map_err(|e| e.to_string())?;
-        }
+        Command::new(&target_file)
+            .args(["/SILENT", "/CLOSEAPPLICATIONS", "/RESTARTAPPLICATIONS"])
+            .spawn()
+            .map_err(|e| e.to_string())?;
         app.exit(0);
         return Ok(());
     }
@@ -452,32 +416,32 @@ mod tests {
     #[test]
     fn parses_prerelease_semver() {
         let v1 = parse_semver_tag("v1.0.0").unwrap();
-        let v_pre = parse_semver_tag("v1.0.1-beta.1").unwrap();
-        let v_stable = parse_semver_tag("v1.0.1").unwrap();
+        let v_pre = parse_semver_tag("v1.2.1-beta.1").unwrap();
+        let v_stable = parse_semver_tag("v1.2.1").unwrap();
         assert!(v_pre > v1);
         assert!(v_stable > v_pre);
     }
 
     #[test]
-    fn selects_portable_and_msix_assets() {
+    fn selects_portable_and_inno_setup_assets() {
         let assets = vec![
             GhAsset {
                 name: "HopCraft-windows-x64-portable.exe".to_string(),
                 browser_download_url: "https://example.com/portable.exe".to_string(),
-                size: 3_000_000,
+                size: 3_500_000,
             },
             GhAsset {
-                name: "HopCraft-windows-x64.msix".to_string(),
-                browser_download_url: "https://example.com/app.msix".to_string(),
-                size: 4_000_000,
+                name: "HopCraft-windows-x64-setup.exe".to_string(),
+                browser_download_url: "https://example.com/setup.exe".to_string(),
+                size: 3_900_000,
             },
         ];
         let (p_asset, p_inst) = select_asset(&assets, "x64", false).unwrap();
         assert_eq!(p_asset.name, "HopCraft-windows-x64-portable.exe");
         assert!(!p_inst);
 
-        let (m_asset, m_inst) = select_asset(&assets, "x64", true).unwrap();
-        assert_eq!(m_asset.name, "HopCraft-windows-x64.msix");
-        assert!(m_inst);
+        let (i_asset, i_inst) = select_asset(&assets, "x64", true).unwrap();
+        assert_eq!(i_asset.name, "HopCraft-windows-x64-setup.exe");
+        assert!(i_inst);
     }
 }
