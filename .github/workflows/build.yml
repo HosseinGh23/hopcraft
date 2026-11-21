@@ -94,26 +94,73 @@ jobs:
             Copy-Item "src-tauri/icons/icon.png" (Join-Path $stageDir "Assets\Square150x150Logo.png")
           }
 
-$manifestLines = @(
-  '<?xml version="1.0" encoding="utf-8"?>',
-  '<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">',
-  '  <Identity Name="HosseinGh23.HopCraft" Publisher="CN=HosseinGh23" Version="1.2.1.0" ProcessorArchitecture="${{ matrix.apx_arch }}" />',
-  '  <Properties>',
-  '    <DisplayName>HopCraft</DisplayName>',
-  '    <PublisherDisplayName>HosseinGh23</PublisherDisplayName>',
-  '    <Logo>Assets\Square150x150Logo.png</Logo>',
-  '  </Properties>',
-  '  <Dependencies>',
-  '    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />',
-  '  </Dependencies>',
-  '  <Capabilities>',
-  '    <rescap:Capability Name="runFullTrust" />',
-  '  </Capabilities>',
-  '  <Applications>',
-  '    <Application Id="HopCraft" Executable="HopCraft.exe" EntryPoint="Windows.FullTrustApplication">',
-  '      <uap:VisualElements DisplayName="HopCraft" Description="Native Windows Xray Proxy Chain JSON Generator" BackgroundColor="#202020" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" />',
-  '    </Application>',
-  '  </Applications>',
-  '</Package>'
-)
-[System.IO.File]::WriteAllLines((Join-Path $stageDir "AppxManifest.xml"), $manifestLines, [System.Text.UTF8Encoding]::new($false))
+          $manifestLines = @(
+            '<?xml version="1.0" encoding="utf-8"?>',
+            '<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">',
+            '  <Identity Name="HosseinGh23.HopCraft" Publisher="CN=HosseinGh23" Version="1.2.1.0" ProcessorArchitecture="${{ matrix.apx_arch }}" />',
+            '  <Properties>',
+            '    <DisplayName>HopCraft</DisplayName>',
+            '    <PublisherDisplayName>HosseinGh23</PublisherDisplayName>',
+            '    <Logo>Assets\Square150x150Logo.png</Logo>',
+            '  </Properties>',
+            '  <Dependencies>',
+            '    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />',
+            '  </Dependencies>',
+            '  <Capabilities>',
+            '    <rescap:Capability Name="runFullTrust" />',
+            '  </Capabilities>',
+            '  <Applications>',
+            '    <Application Id="HopCraft" Executable="HopCraft.exe" EntryPoint="Windows.FullTrustApplication">',
+            '      <uap:VisualElements DisplayName="HopCraft" Description="Native Windows Xray Proxy Chain JSON Generator" BackgroundColor="#202020" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" />',
+            '    </Application>',
+            '  </Applications>',
+            '</Package>'
+          )
+          [System.IO.File]::WriteAllLines((Join-Path $stageDir "AppxManifest.xml"), $manifestLines, [System.Text.UTF8Encoding]::new($false))
+
+          if (Test-Path $msixDst) { Remove-Item -Force $msixDst }
+          & $makeAppx.FullName pack /d $stageDir /p $msixDst /nv | Out-Null
+          $mSize = [math]::Round((Get-Item $msixDst).Length / 1MB, 2)
+          Write-Host "MSIX:     $msixDst ($mSize MB)"
+
+      - name: Upload ${{ matrix.arch }} artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: HopCraft-windows-${{ matrix.arch }}
+          path: |
+            dist/*-portable.exe
+            dist/*.msix
+          retention-days: 30
+
+  release:
+    name: Publish GitHub Release
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Check if tag is a pre-release
+        id: tagcheck
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [[ "$TAG" == *"-"* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release (Portable + MSIX for x64, x86 & ARM64)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/*-portable.exe
+            release-assets/*.msix
+          prerelease: ${{ steps.tagcheck.outputs.prerelease }}
+          generate_release_notes: true
